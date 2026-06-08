@@ -9,10 +9,129 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css">
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Pretendard',sans-serif;
+    background:#f7f7f7;
+    color:#222;
+}
+
+.container{
+    display:flex;
+    height:100vh;
+}
+
+.sidebar{
+    width:360px;
+    background:#fff;
+    border-right:1px solid #e5e5e5;
+    display:flex;
+    flex-direction:column;
+}
+
+.brand{
+    padding:30px;
+    border-bottom:1px solid #eee;
+}
+
+.brand h1{
+    font-size:28px;
+    color:#DA291C;
+}
+
+.brand p{
+    margin-top:4px;
+    color:#777;
+}
+
+.search-box{
+    padding:20px;
+    display:flex;
+    gap:10px;
+}
+
+.search-box input{
+    flex:1;
+    height:44px;
+    border:1px solid #ddd;
+    padding:0 12px;
+    border-radius:8px;
+}
+
+.search-box button{
+    width:70px;
+    border:none;
+    background:#DA291C;
+    color:#fff;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.map-type{
+    padding:0 20px 20px;
+    display:flex;
+    gap:10px;
+}
+
+.map-type button{
+    flex:1;
+    height:40px;
+    border:1px solid #ddd;
+    background:#fff;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.map-type button.active{
+    background:#DA291C;
+    color:#fff;
+    border-color:#DA291C;
+}
+
+#storeList{
+    list-style:none;
+    overflow:auto;
+    flex:1;
+}
+
+.store-item{
+    padding:18px 20px;
+    border-top:1px solid #eee;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.store-item:hover{
+    background:#fafafa;
+}
+
+.store-name{
+    font-weight:600;
+    margin-bottom:6px;
+}
+
+.store-address{
+    color:#666;
+    font-size:14px;
+}
+
+.map-wrap{
+    flex:1;
+}
+
+#map{
+    width:100%;
+    height:100%;
+}
+</style>
 
 <script
-type="text/javascript"
 src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=xmjr9jl2lj&submodules=geocoder">
 </script>
 
@@ -51,7 +170,195 @@ src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=xmjr9jl2lj&submod
 
 </div>
 
-<script src="script.js"></script>
+<script>
+const stores = [
+{
+    name:"맥도날드 강남점",
+    address:"서울 강남구 테헤란로 152",
+    lat:37.5007,
+    lng:127.0365
+},
+{
+    name:"맥도날드 홍대점",
+    address:"서울 마포구 양화로 160",
+    lat:37.5572,
+    lng:126.9245
+},
+{
+    name:"맥도날드 잠실점",
+    address:"서울 송파구 올림픽로 240",
+    lat:37.5130,
+    lng:127.1027
+},
+{
+    name:"맥도날드 명동점",
+    address:"서울 중구 명동길 14",
+    lat:37.5636,
+    lng:126.9834
+},
+{
+    name:"맥도날드 여의도점",
+    address:"서울 영등포구 국제금융로 10",
+    lat:37.5251,
+    lng:126.9253
+}
+];
+
+if(typeof naver === "undefined"){
+    alert("네이버 지도 API 로드 실패");
+}
+
+const map = new naver.maps.Map("map",{
+    center:new naver.maps.LatLng(37.5665,126.9780),
+    zoom:11
+});
+
+const storeList = document.getElementById("storeList");
+
+let currentInfoWindow = null;
+let searchCircle = null;
+let searchMarker = null;
+
+stores.forEach(store=>{
+
+    const marker = new naver.maps.Marker({
+        position:new naver.maps.LatLng(store.lat,store.lng),
+        map:map
+    });
+
+    const infoWindow = new naver.maps.InfoWindow({
+        content:`
+        <div style="padding:12px;min-width:180px;">
+            <strong>${store.name}</strong><br>
+            ${store.address}
+        </div>
+        `
+    });
+
+    marker.addListener("click",()=>{
+
+        if(currentInfoWindow){
+            currentInfoWindow.close();
+        }
+
+        infoWindow.open(map,marker);
+        currentInfoWindow = infoWindow;
+
+        map.panTo(marker.getPosition());
+    });
+
+    const li = document.createElement("li");
+
+    li.className = "store-item";
+
+    li.innerHTML = `
+        <div class="store-name">${store.name}</div>
+        <div class="store-address">${store.address}</div>
+    `;
+
+    li.addEventListener("click",()=>{
+
+        map.setCenter(
+            new naver.maps.LatLng(store.lat,store.lng)
+        );
+
+        map.setZoom(15);
+
+        if(currentInfoWindow){
+            currentInfoWindow.close();
+        }
+
+        infoWindow.open(map,marker);
+        currentInfoWindow = infoWindow;
+    });
+
+    storeList.appendChild(li);
+});
+
+document
+.getElementById("searchBtn")
+.addEventListener("click",searchAddress);
+
+function searchAddress(){
+
+    const address =
+    document.getElementById("address").value.trim();
+
+    if(!address){
+        alert("주소를 입력하세요.");
+        return;
+    }
+
+    naver.maps.Service.geocode({
+        query:address
+    },function(status,response){
+
+        if(status !== naver.maps.Service.Status.OK){
+            alert("검색 결과가 없습니다.");
+            return;
+        }
+
+        const item = response.v2.addresses[0];
+
+        const point =
+        new naver.maps.LatLng(
+            Number(item.y),
+            Number(item.x)
+        );
+
+        map.setCenter(point);
+        map.setZoom(15);
+
+        if(searchMarker){
+            searchMarker.setMap(null);
+        }
+
+        searchMarker = new naver.maps.Marker({
+            position:point,
+            map:map
+        });
+
+        if(searchCircle){
+            searchCircle.setMap(null);
+        }
+
+        searchCircle = new naver.maps.Circle({
+            map:map,
+            center:point,
+            radius:1000,
+            strokeColor:"#DA291C",
+            strokeOpacity:0.8,
+            strokeWeight:2,
+            fillColor:"#DA291C",
+            fillOpacity:0.15
+        });
+    });
+}
+
+document
+.getElementById("normalBtn")
+.addEventListener("click",()=>{
+
+    map.setMapTypeId(
+        naver.maps.MapTypeId.NORMAL
+    );
+
+    normalBtn.classList.add("active");
+    satelliteBtn.classList.remove("active");
+});
+
+document
+.getElementById("satelliteBtn")
+.addEventListener("click",()=>{
+
+    map.setMapTypeId(
+        naver.maps.MapTypeId.SATELLITE
+    );
+
+    satelliteBtn.classList.add("active");
+    normalBtn.classList.remove("active");
+});
+</script>
 
 </body>
 </html>
