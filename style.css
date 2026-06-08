@@ -1,0 +1,118 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Pretendard',sans-serif;
+    background:#f7f7f7;
+    color:#222;
+}
+
+.container{
+    display:flex;
+    height:100vh;
+}
+
+.sidebar{
+    width:360px;
+    background:#fff;
+    border-right:1px solid #e5e5e5;
+    display:flex;
+    flex-direction:column;
+}
+
+.brand{
+    padding:30px;
+    border-bottom:1px solid #eee;
+}
+
+.brand h1{
+    font-size:28px;
+    color:#DA291C;
+}
+
+.brand p{
+    margin-top:4px;
+    color:#777;
+}
+
+.search-box{
+    padding:20px;
+    display:flex;
+    gap:10px;
+}
+
+.search-box input{
+    flex:1;
+    height:44px;
+    border:1px solid #ddd;
+    padding:0 12px;
+    border-radius:8px;
+}
+
+.search-box button{
+    width:70px;
+    border:none;
+    background:#DA291C;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.map-type{
+    padding:0 20px 20px;
+    display:flex;
+    gap:10px;
+}
+
+.map-type button{
+    flex:1;
+    height:40px;
+    border:1px solid #ddd;
+    background:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.map-type button.active{
+    background:#DA291C;
+    color:white;
+    border-color:#DA291C;
+}
+
+#storeList{
+    list-style:none;
+    overflow:auto;
+}
+
+.store-item{
+    padding:18px 20px;
+    border-top:1px solid #eee;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.store-item:hover{
+    background:#fafafa;
+}
+
+.store-name{
+    font-weight:600;
+    margin-bottom:6px;
+}
+
+.store-address{
+    color:#666;
+    font-size:14px;
+}
+
+.map-wrap{
+    flex:1;
+}
+
+#map{
+    width:100%;
+    height:100%;
+}
